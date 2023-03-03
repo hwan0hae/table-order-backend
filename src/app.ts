@@ -1,9 +1,13 @@
-import express, { Request, Response } from "express";
+import express from "express";
+import cors from "cors";
+import { getMenu } from "./controller/menu";
 
 const app = express();
 
-app.get("/welcome", (req: Request, res: Response) => {
-  res.send("welcome!");
-});
+app.use(cors());
+app.use(express.json());
 
-app.listen(8080);
+app.get("/api/menu", getMenu);
+
+const port = process.env.PORT;
+app.listen(port);

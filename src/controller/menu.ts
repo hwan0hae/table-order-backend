@@ -9,6 +9,13 @@ export const getMenu = async (req: Request, res: Response) => {
       where: {
         companyId,
       },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        description: true,
+        imageUrl: true,
+      },
     });
     return res.status(200).json(list);
   } catch (error) {

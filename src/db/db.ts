@@ -1,5 +1,5 @@
-import { Client } from "pg";
-import dotenv from "dotenv";
+import { Client } from 'pg';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -13,8 +13,8 @@ export const client = new Client({
 
 client.connect((err) => {
   if (err) {
-    console.error("DB connection error", err.stack);
+    console.error('DB connection error', err.stack);
   } else {
-    console.log("DB connect...");
+    console.log('DB connect...');
   }
 });

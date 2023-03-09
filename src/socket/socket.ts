@@ -4,20 +4,20 @@ import { server } from '../app';
 const socketArr = new Array<Socket>();
 
 export const io = new socketIO.Server(server, {
-    cors: {
-        origin: '*',
-        methods: ['GET', 'POST'],
-        credentials: true,
-    },
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
 });
 
 io.on('connection', (socket) => {
-    socketArr.push(socket);
-    console.log('New client connected');
+  socketArr.push(socket);
+  console.log('New client connected');
 
-    socket.on('disconnect', () => console.log('user disconnect', socket.id));
+  socket.on('disconnect', () => console.log('user disconnect', socket.id));
 
-    socket.on('error', (error) => {
-        console.error(error);
-    });
+  socket.on('error', (error) => {
+    console.error(error);
+  });
 });

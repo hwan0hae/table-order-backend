@@ -6,6 +6,7 @@ dotenv.config();
 export const client = new Client({
   user: process.env.DATABASE_ID,
   host: process.env.DATABASE_URL,
+  database: process.env.DATABASE_DB,
   password: process.env.DATABASE_PASSWORD,
   port: Number(process.env.DATABASE_PORT),
 });

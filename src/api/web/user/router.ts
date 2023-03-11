@@ -3,14 +3,13 @@ import { signUpCheck, validate } from '../../../middleware/validator';
 import { SignUp } from '../../../types/api';
 import { client } from '../../../db/db';
 import bcrypt from 'bcrypt';
-import { body, checkSchema } from 'express-validator';
 
 export const UserRouter = express.Router();
 
 UserRouter.post(
   '/signup',
-  validate(signUpCheck),
-  async (req: Request, res: Response) => {
+  ...validate(signUpCheck),
+  (req: Request, res: Response) => {
     const { body }: { body: SignUp } = req;
     // console.log(body);
     const salt = process.env.HASH_SALT;

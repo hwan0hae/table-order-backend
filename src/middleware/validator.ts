@@ -9,7 +9,7 @@ import {
 const passwordRegExp = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,15}$/;
 
 export const validate = (schema: Schema) => {
-  return (
+  return [
     checkSchema(schema),
     (req: Request, res: Response, next: NextFunction) => {
       const errors: Result = validationResult(req);
@@ -19,7 +19,7 @@ export const validate = (schema: Schema) => {
       }
       next();
     }
-  );
+  ];
 };
 
 export const signUpCheck: Schema = {

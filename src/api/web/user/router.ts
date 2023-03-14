@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import {
   signInCheck,
   signUpCheck,
@@ -7,11 +8,10 @@ import {
 } from '../../../middleware/validator';
 import { ISignIn, ISignUp, IUserSignUp } from '../../../types/api';
 import { client } from '../../../db/db';
-import bcrypt from 'bcrypt';
 import { IUser } from '../../../types/data';
 import { auth } from '../../../middleware/auth';
 
-export const UserRouter = express.Router();
+const UserRouter = express.Router();
 
 // 트랜잭션 적용
 // jwt 데이터 적용 할것
@@ -31,7 +31,7 @@ UserRouter.post(
         await client.query(
           `INSERT INTO company (name, company_number)
            VALUES ($1,$2)`,
-          [companyName, companyNumber]
+          [companyName, companyNumber],
         );
       }
 
@@ -54,7 +54,7 @@ UserRouter.post(
           userData.phone,
           userData.auth,
           userData.companyId,
-        ]
+        ],
       );
 
       if (userData.auth === 'OWNER') {
@@ -74,39 +74,39 @@ UserRouter.post(
         switch (errorType) {
           case 'Company_name_key':
             return res.status(409).json({
-              error: error,
+              error,
               message: '이미 가입된 회사명입니다.',
             });
           case 'Company_company_number_key':
             return res.status(409).json({
-              error: error,
+              error,
               message: '이미 가입된 사업자 등록번호입니다.',
             });
           case 'User_email_key':
             return res.status(409).json({
-              error: error,
+              error,
               message: '이미 사용중인 이메일입니다.',
             });
           case 'User_phone_key':
             return res.status(409).json({
-              error: error,
+              error,
               message: '이미 사용중인 전화번호입니다.',
             });
 
           default:
             return res.status(409).json({
-              error: error,
+              error,
               message: '알 수 없는 에러입니다. 잠시후에 다시 시도해주세요!',
             });
         }
       }
 
       return res.status(400).json({
-        error: error,
+        error,
         message: '회원가입에 실패했습니다. 새로고침후에 시도해주세요.',
       });
     }
-  }
+  },
 );
 
 UserRouter.post(
@@ -122,41 +122,41 @@ UserRouter.post(
           if (err) throw err;
 
           if (result.rows.length === 0) {
-            res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
+            return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
           }
           const user: IUser = result.rows[0];
           if (user.status === 0) {
-            res.status(401).json({
+            return res.status(401).json({
               message: '회원탈퇴한 계정입니다. 고객센터에 문의해주세요.',
             });
           }
           if (user.status === 2) {
-            res.status(401).json({
+            return res.status(401).json({
               message: '정지되어있는 계정입니다. 고객센터에 문의해주세요.',
             });
           }
           const isCompare = await bcrypt.compare(password, user.password);
 
           if (!isCompare) {
-            res.status(401).json({
+            return res.status(401).json({
               message: '비밀번호가 일치하지 않습니다.',
             });
           }
-          //access Token 발급
+          // access Token 발급
           const accessToken = jwt.sign(
             { id: user.id },
             String(process.env.ACCESS_SECRET),
-            { expiresIn: '30m', issuer: 'hwan_0_hae' }
+            { expiresIn: '30m', issuer: 'hwan_0_hae' },
           );
 
-          //refresh Token 발급
+          // refresh Token 발급
           const refreshToken = jwt.sign(
             { id: user.id },
             String(process.env.REFRESH_SECRET),
-            { expiresIn: '24h', issuer: 'hwan_0_hae' }
+            { expiresIn: '24h', issuer: 'hwan_0_hae' },
           );
 
-          //token 전송
+          // token 전송
           res.cookie('access_token', accessToken, {
             secure: false,
             httpOnly: true,
@@ -168,19 +168,22 @@ UserRouter.post(
           });
 
           client.query(
-            `UPDATE "user" SET token='${refreshToken}', updated_at=now() WHERE id=${user.id}`
+            `UPDATE "user" SET token='${refreshToken}', updated_at=now() WHERE id=${user.id}`,
           );
 
-          res.status(200).json({ message: '로그인에 성공했습니다.' });
-        }
+          return res.status(200).json({ message: '로그인에 성공했습니다.' });
+        },
       );
     } catch (error: any) {
       console.error('/api/v1/web/user/signin >> ', error);
 
       return res.status(400).json({
-        error: error,
+        error,
         message: '로그인에 실패했습니다. 새로고침후에 시도해주세요!',
       });
     }
-  }
+    return '';
+  },
 );
+
+export default UserRouter;

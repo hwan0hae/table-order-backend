@@ -1,15 +1,18 @@
+import { Auth } from './data';
+
 /**signUp body data */
-export interface SignUp {
+export interface ISignUp {
   companyName?: string;
   companyNumber?: string;
   email: string;
   password: string;
   name: string;
   phone: string;
+  auth: Auth;
 }
 
 /**user signUp  */
-export interface UserSignUp {
+export interface IUserSignUp {
   email: string;
   password: string;
   name: string;
@@ -18,4 +21,7 @@ export interface UserSignUp {
   companyId: number;
 }
 
-type Auth = 'OWNER' | 'ADMIN' | 'STAFF' | 'USER';
+export interface ISignIn {
+  email: string;
+  password: string;
+}

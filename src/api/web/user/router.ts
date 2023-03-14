@@ -5,7 +5,12 @@ import {
   signUpCheck,
   validate,
 } from '../../../middleware/validator';
-import { ISignIn, ISignUp, IUserSignUp } from '../../../types/api';
+import {
+  IMemberSignUpData,
+  ISignIn,
+  ISignUpData,
+  IUserSignUp,
+} from '../../../types/api';
 import { client } from '../../../db/db';
 import bcrypt from 'bcrypt';
 import { IUser } from '../../../types/data';
@@ -13,35 +18,36 @@ import { auth } from '../../../middleware/auth';
 
 export const UserRouter = express.Router();
 
-// 트랜잭션 적용
-// jwt 데이터 적용 할것
+// 트랜잭션 적용 해야합니다!! ...
+
+/** 회사 OWNER 회원가입  */
 UserRouter.post(
   '/signup',
   ...validate(signUpCheck),
-  auth,
   async (req: Request, res: Response) => {
-    const data: ISignUp = req.body;
+    const data: ISignUpData = req.body;
     const { companyName, companyNumber, ...userInfo } = data;
     const salt = Number(process.env.HASH_SALT);
 
     try {
-      /** 회사 데이터가 있다면  */
-      if (companyName && companyNumber) {
-        /** company 생성 */
-        await client.query(
-          `INSERT INTO company (name, company_number)
+      /** company 생성 */
+      await client.query(
+        `INSERT INTO company (name, company_number)
            VALUES ($1,$2)`,
-          [companyName, companyNumber]
-        );
-      }
+        [companyName, companyNumber]
+      );
 
-      /** user 생성 */
+      const result = await client.query(
+        `SELECT id FROM company WHERE company_number='${companyNumber}'`
+      );
+      const companyId = result.rows[0];
+
+      /** OWNER user 생성 */
       const hashPassword = await bcrypt.hash(data.password, salt);
       const userData: IUserSignUp = {
         ...userInfo,
         password: hashPassword,
-        // companyId jwt > 데이터 가져와서 넣을것 !
-        companyId: 1111,
+        companyId,
       };
 
       await client.query(
@@ -57,14 +63,8 @@ UserRouter.post(
         ]
       );
 
-      if (userData.auth === 'OWNER') {
-        return res.status(200).json({
-          message: '회원가입에 성공했습니다. 로그인 페이지로 이동합니다.',
-        });
-      }
-
       return res.status(200).json({
-        message: '회원이 추가되었습니다.',
+        message: '회원가입에 성공했습니다. 로그인 페이지로 이동합니다.',
       });
     } catch (error: any) {
       console.error('/api/v1/web/user/signup >> ', error);
@@ -82,6 +82,73 @@ UserRouter.post(
               error: error,
               message: '이미 가입된 사업자 등록번호입니다.',
             });
+          case 'User_email_key':
+            return res.status(409).json({
+              error: error,
+              message: '이미 사용중인 이메일입니다.',
+            });
+          case 'User_phone_key':
+            return res.status(409).json({
+              error: error,
+              message: '이미 사용중인 전화번호입니다.',
+            });
+
+          default:
+            return res.status(409).json({
+              error: error,
+              message: '알 수 없는 에러입니다. 잠시후에 다시 시도해주세요!',
+            });
+        }
+      }
+
+      return res.status(400).json({
+        error: error,
+        message: '회원가입에 실패했습니다. 새로고침후에 시도해주세요.',
+      });
+    }
+  }
+);
+
+/** 회사 Member 회원가입  */
+UserRouter.post(
+  '/member/signup',
+  ...validate(signUpCheck),
+  auth,
+  async (req: Request, res: Response) => {
+    const data: IMemberSignUpData = req.body;
+    const salt = Number(process.env.HASH_SALT);
+
+    try {
+      /** member 생성 */
+      const hashPassword = await bcrypt.hash(data.password, salt);
+      const userData: IUserSignUp = {
+        ...data,
+        password: hashPassword,
+        companyId: req.currentUser?.company_id,
+      };
+
+      await client.query(
+        `INSERT INTO "user" (email, password, name, phone, auth,company_id) 
+          VALUES ($1,$2,$3,$4,$5,$6)`,
+        [
+          userData.email,
+          userData.password,
+          userData.name,
+          userData.phone,
+          userData.auth,
+          userData.companyId,
+        ]
+      );
+
+      return res.status(200).json({
+        message: '회원이 추가되었습니다.',
+      });
+    } catch (error: any) {
+      console.error('/api/v1/web/user/signup >> ', error);
+
+      if (error.code === '23505') {
+        const errorType = error.constraint;
+        switch (errorType) {
           case 'User_email_key':
             return res.status(409).json({
               error: error,

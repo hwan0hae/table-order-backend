@@ -1,9 +1,9 @@
 import { Auth } from './data';
 
 /**signUp body data */
-export interface ISignUp {
-  companyName?: string;
-  companyNumber?: string;
+export interface ISignUpData {
+  companyName: string;
+  companyNumber: string;
   email: string;
   password: string;
   name: string;
@@ -11,14 +11,23 @@ export interface ISignUp {
   auth: Auth;
 }
 
-/**user signUp  */
+/**member signUp body data */
+export interface IMemberSignUpData {
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+  auth: Auth;
+}
+
+/**user 추가  */
 export interface IUserSignUp {
   email: string;
   password: string;
   name: string;
   phone: string;
   auth: Auth;
-  companyId: number;
+  companyId: number | undefined;
 }
 
 export interface ISignIn {

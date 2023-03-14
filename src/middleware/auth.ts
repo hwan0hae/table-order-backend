@@ -3,7 +3,6 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { client } from '../db/db';
 import { IUser } from '../types/data';
 
-//access 검증되면 user 데이터 넘겨줄것 > 검증 안될시 catch로 빠짐 /만약 만료시간이 적다면 > 재발급 하고 데이터는 넘길것 >
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
   const token: string = req.cookies.access_token;
   const refreshToken: string = req.cookies.refresh_token;

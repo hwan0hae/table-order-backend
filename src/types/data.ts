@@ -9,12 +9,8 @@ export interface IUser {
   updated_at: Date;
   auth: Auth;
   status: Status;
+  token: string;
 }
 
 export type Auth = 'OWNER' | 'ADMIN' | 'STAFF' | 'USER';
 export type Status = 0 | 1 | 2;
-
-export interface IRefreshTokenCompare {
-  id: number;
-  token: string;
-}

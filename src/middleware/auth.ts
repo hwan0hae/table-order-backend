@@ -1,13 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { client } from '../db/db';
-import { IRefreshTokenCompare } from '../types/data';
+import { IUser } from '../types/data';
 
-//data 넘기기 확인
+//access 검증되면 user 데이터 넘겨줄것 > 검증 안될시 catch로 빠짐 /만약 만료시간이 적다면 > 재발급 하고 데이터는 넘길것 >
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
   const token: string = req.cookies.access_token;
   const refreshToken: string = req.cookies.refresh_token;
-  if (!token) return next();
+  if (!token)
+    return res.status(401).json({ message: '토큰이 유효하지 않습니다.' });
 
   try {
     // 토큰을 디코딩 합니다
@@ -15,22 +16,24 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
       token,
       String(process.env.ACCESS_SECRET)
     ) as JwtPayload;
+
+    const result = await client.query(
+      `SELECT * FROM "user" WHERE id=${decoded.id} `
+    );
+
+    if (result.rows.length === 0) {
+      res.clearCookie('access_token');
+      res.clearCookie('refresh_token');
+      return res.status(401).json({ message: '데이터가 조회되지 않습니다.' });
+    }
+
+    const user: IUser = result.rows[0];
+
     const remainingTime = decoded.iat;
 
     if (remainingTime) {
       // 토큰 만료일이 10분밖에 안남으면 토큰을 재발급합니다
       if (Date.now() / 1000 - remainingTime > 60 * 10) {
-        const result = await client.query(
-          `SELECT token,id FROM "user" WHERE id=${decoded.id} `
-        );
-
-        if (result.rows.length === 0) {
-          res.clearCookie('access_token');
-          res.clearCookie('refresh_token');
-        }
-
-        const user: IRefreshTokenCompare = result.rows[0];
-
         //DB 토큰과 일치한다면 유효한지 확인 후 토큰 재발급
         if (user.token === req.cookies.refresh_token) {
           jwt.verify(
@@ -40,6 +43,9 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
               if (err) {
                 res.clearCookie('access_token');
                 res.clearCookie('refresh_token');
+                return res
+                  .status(401)
+                  .json({ message: '토큰이 유효하지 않습니다.' });
               }
               //access token 재발급
               const accessToken = jwt.sign(
@@ -57,11 +63,12 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
         } else {
           res.clearCookie('access_token');
           res.clearCookie('refresh_token');
+          return res.status(401).json({ message: '토큰이 유효하지 않습니다.' });
         }
       }
     }
-
-    req.currentUserId = decoded.id;
+    //userData 전달
+    req.currentUser = user;
   } catch (error: any) {
     //엑세스 토큰 만료시 리프레시 토큰 확인 후 재발급
     console.log('jwtAuth >>> ', error);
@@ -74,9 +81,10 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
       if (result.rows.length === 0) {
         res.clearCookie('access_token');
         res.clearCookie('refresh_token');
+        return res.status(401).json({ message: '토큰이 유효하지 않습니다.' });
       }
 
-      const user: IRefreshTokenCompare = result.rows[0];
+      const user: IUser = result.rows[0];
 
       jwt.verify(
         refreshToken,
@@ -85,6 +93,9 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
           if (err) {
             res.clearCookie('access_token');
             res.clearCookie('refresh_token');
+            return res
+              .status(401)
+              .json({ message: '토큰이 유효하지 않습니다.' });
           }
           //access token 재발급
           const accessToken = jwt.sign(
@@ -99,10 +110,11 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
           });
         }
       );
+      //userData 전달
+      req.currentUser = user;
+    } else {
+      return res.status(401).json({ message: '토큰이 유효하지 않습니다.' });
     }
-
-    req.currentUserId = null;
   }
-
   return next();
 };

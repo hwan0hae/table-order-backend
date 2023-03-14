@@ -23,7 +23,7 @@ UserRouter.post(
     const data: ISignUp = req.body;
     const { companyName, companyNumber, ...userInfo } = data;
     const salt = Number(process.env.HASH_SALT);
-    console.log('dasdsa', req.currentUserId);
+
     try {
       /** 회사 데이터가 있다면  */
       if (companyName && companyNumber) {

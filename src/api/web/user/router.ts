@@ -26,6 +26,7 @@ UserRouter.post(
   ...validate(signUpCheck),
   async (req: Request, res: Response) => {
     const data: ISignUpData = req.body;
+
     const { companyName, companyNumber, ...userInfo } = data;
     const salt = Number(process.env.HASH_SALT);
 
@@ -40,7 +41,7 @@ UserRouter.post(
       const result = await client.query(
         `SELECT id FROM company WHERE company_number='${companyNumber}'`
       );
-      const companyId = result.rows[0];
+      const companyId = result.rows[0].id;
 
       /** OWNER user 생성 */
       const hashPassword = await bcrypt.hash(data.password, salt);
@@ -49,7 +50,6 @@ UserRouter.post(
         password: hashPassword,
         companyId,
       };
-
       await client.query(
         `INSERT INTO "user" (email, password, name, phone, auth,company_id) 
         VALUES ($1,$2,$3,$4,$5,$6)`,

@@ -7,13 +7,12 @@ import {
 } from '../../../middleware/validator';
 import {
   IMemberSignUpData,
-  ISignIn,
+  ISignInData,
   ISignUpData,
-  IUserSignUp,
 } from '../../../types/api';
 import { client } from '../../../db/db';
 import bcrypt from 'bcrypt';
-import { IUser } from '../../../types/data';
+import { IUser, IUserSignUp } from '../../../types/data';
 import { auth } from '../../../middleware/auth';
 
 export const UserRouter = express.Router();
@@ -180,7 +179,7 @@ UserRouter.post(
   '/signin',
   ...validate(signInCheck),
   async (req: Request, res: Response) => {
-    const { email, password }: ISignIn = req.body;
+    const { email, password }: ISignInData = req.body;
 
     try {
       client.query(
@@ -189,37 +188,39 @@ UserRouter.post(
           if (err) throw err;
 
           if (result.rows.length === 0) {
-            res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
+            return res
+              .status(401)
+              .json({ message: '존재하지 않는 이메일입니다.' });
           }
           const user: IUser = result.rows[0];
           if (user.status === 0) {
-            res.status(401).json({
+            return res.status(401).json({
               message: '회원탈퇴한 계정입니다. 고객센터에 문의해주세요.',
             });
           }
           if (user.status === 2) {
-            res.status(401).json({
+            return res.status(401).json({
               message: '정지되어있는 계정입니다. 고객센터에 문의해주세요.',
             });
           }
           const isCompare = await bcrypt.compare(password, user.password);
 
           if (!isCompare) {
-            res.status(401).json({
+            return res.status(401).json({
               message: '비밀번호가 일치하지 않습니다.',
             });
           }
           //access Token 발급
           const accessToken = jwt.sign(
             { id: user.id },
-            String(process.env.ACCESS_SECRET),
+            String(process.env.JWT_ACCESS_SECRET),
             { expiresIn: '30m', issuer: 'hwan_0_hae' }
           );
 
           //refresh Token 발급
           const refreshToken = jwt.sign(
             { id: user.id },
-            String(process.env.REFRESH_SECRET),
+            String(process.env.JWT_REFRESH_SECRET),
             { expiresIn: '24h', issuer: 'hwan_0_hae' }
           );
 
@@ -238,7 +239,24 @@ UserRouter.post(
             `UPDATE "user" SET token='${refreshToken}', updated_at=now() WHERE id=${user.id}`
           );
 
-          res.status(200).json({ message: '로그인에 성공했습니다.' });
+          const companyResult = await client.query(
+            `SELECT name FROM company WHERE id=${user.company_id}`
+          );
+          const companyName: string = companyResult.rows[0].name;
+
+          const userInfo = {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            phone: user.phone,
+            auth: user.auth,
+            companyId: user.company_id,
+            companyName,
+          };
+
+          return res
+            .status(200)
+            .json({ data: userInfo, message: '로그인에 성공했습니다.' });
         }
       );
     } catch (error: any) {
@@ -251,3 +269,20 @@ UserRouter.post(
     }
   }
 );
+
+UserRouter.post('/logout', async (req: Request, res: Response) => {
+  try {
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
+    return res.status(200).json({
+      message: '로그아웃 되었습니다.',
+    });
+  } catch (error: any) {
+    console.error('/api/v1/web/user/logout >> ', error);
+
+    return res.status(400).json({
+      error: error,
+      message: '로그아웃에 실패했습니다. 새로고침후에 시도해주세요!',
+    });
+  }
+});

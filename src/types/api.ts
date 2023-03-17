@@ -20,17 +20,7 @@ export interface IMemberSignUpData {
   auth: Auth;
 }
 
-/**user 추가  */
-export interface IUserSignUp {
-  email: string;
-  password: string;
-  name: string;
-  phone: string;
-  auth: Auth;
-  companyId: number | undefined;
-}
-
-export interface ISignIn {
+export interface ISignInData {
   email: string;
   password: string;
 }

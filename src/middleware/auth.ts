@@ -13,9 +13,8 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     // 토큰을 디코딩 합니다
     const decoded = jwt.verify(
       token,
-      String(process.env.ACCESS_SECRET)
+      String(process.env.JWT_ACCESS_SECRET)
     ) as JwtPayload;
-
     const result = await client.query(
       `SELECT * FROM "user" WHERE id=${decoded.id} `
     );
@@ -37,7 +36,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
         if (user.token === req.cookies.refresh_token) {
           jwt.verify(
             refreshToken,
-            String(process.env.REFRESH_SECRET),
+            String(process.env.JWT_REFRESH_SECRET),
             (err, decode) => {
               if (err) {
                 res.clearCookie('access_token');
@@ -49,7 +48,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
               //access token 재발급
               const accessToken = jwt.sign(
                 { id: user.id },
-                String(process.env.ACCESS_SECRET),
+                String(process.env.JWT_ACCESS_SECRET),
                 { expiresIn: '30m', issuer: 'Hwan_0_hae' }
               );
 
@@ -87,7 +86,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 
       jwt.verify(
         refreshToken,
-        String(process.env.REFRESH_SECRET),
+        String(process.env.JWT_REFRESH_SECRET),
         (err, decode) => {
           if (err) {
             res.clearCookie('access_token');
@@ -99,7 +98,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
           //access token 재발급
           const accessToken = jwt.sign(
             { id: user.id },
-            String(process.env.ACCESS_SECRET),
+            String(process.env.JWT_ACCESS_SECRET),
             { expiresIn: '30m', issuer: 'Hwan_0_hae' }
           );
 

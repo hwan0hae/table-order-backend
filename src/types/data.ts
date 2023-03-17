@@ -11,6 +11,15 @@ export interface IUser {
   status: Status;
   token: string;
 }
-
 export type Auth = 'OWNER' | 'ADMIN' | 'STAFF' | 'USER';
 export type Status = 0 | 1 | 2;
+
+/**user 추가  */
+export interface IUserSignUp {
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+  auth: Auth;
+  companyId: number | undefined;
+}

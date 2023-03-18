@@ -24,3 +24,12 @@ export interface ISignInData {
   email: string;
   password: string;
 }
+
+export interface IEditUserData {
+  id: number;
+  email: string;
+  name: string;
+  phone: string;
+  auth: string;
+  status: string;
+}

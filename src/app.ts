@@ -1,8 +1,9 @@
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
-import { WebRouter } from './api/web/WebRouter';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import { WebRouter } from './api/web/WebRouter';
 import { io } from './socket/socket';
 import { client } from './db/db';
 
@@ -19,6 +20,7 @@ export const server = http.createServer(app);
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 app.use(WEB_API_URL, WebRouter);
 

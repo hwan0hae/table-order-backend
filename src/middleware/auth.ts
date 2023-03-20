@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { client } from '../db/db';
+import client from '../db/db';
 import { IUser } from '../types/data';
 
-export const auth = async (req: Request, res: Response, next: NextFunction) => {
+const authChecker = async (req: Request, res: Response, next: NextFunction) => {
   const token: string = req.cookies.access_token;
   const refreshToken: string = req.cookies.refresh_token;
   if (!token)
@@ -32,7 +32,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     if (remainingTime) {
       // 토큰 만료일이 10분밖에 안남으면 토큰을 재발급합니다
       if (Date.now() / 1000 - remainingTime > 60 * 10) {
-        //DB 토큰과 일치한다면 유효한지 확인 후 토큰 재발급
+        // DB 토큰과 일치한다면 유효한지 확인 후 토큰 재발급
         if (user.token === req.cookies.refresh_token) {
           jwt.verify(
             refreshToken,
@@ -45,14 +45,14 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
                   .status(401)
                   .json({ message: '토큰이 유효하지 않습니다.' });
               }
-              //access token 재발급
+              // access token 재발급
               const accessToken = jwt.sign(
                 { id: user.id },
                 String(process.env.JWT_ACCESS_SECRET),
                 { expiresIn: '30m', issuer: 'Hwan_0_hae' }
               );
 
-              res.cookie('access_token', accessToken, {
+              return res.cookie('access_token', accessToken, {
                 secure: false,
                 httpOnly: true,
               });
@@ -65,10 +65,10 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
         }
       }
     }
-    //userData 전달
+    // userData 전달
     req.currentUser = user;
   } catch (error: any) {
-    //엑세스 토큰 만료시 리프레시 토큰 확인 후 재발급
+    // 엑세스 토큰 만료시 리프레시 토큰 확인 후 재발급
     console.log('jwtAuth >>> ', error);
 
     if (error.name === 'TokenExpiredError') {
@@ -95,20 +95,20 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
               .status(401)
               .json({ message: '토큰이 유효하지 않습니다.' });
           }
-          //access token 재발급
+          // access token 재발급
           const accessToken = jwt.sign(
             { id: user.id },
             String(process.env.JWT_ACCESS_SECRET),
             { expiresIn: '30m', issuer: 'Hwan_0_hae' }
           );
 
-          res.cookie('access_token', accessToken, {
+          return res.cookie('access_token', accessToken, {
             secure: false,
             httpOnly: true,
           });
         }
       );
-      //userData 전달
+      // userData 전달
       req.currentUser = user;
     } else {
       return res.status(401).json({ message: '토큰이 유효하지 않습니다.' });
@@ -116,3 +116,5 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
   }
   return next();
 };
+
+export default authChecker;

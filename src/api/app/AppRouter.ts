@@ -1,3 +1,5 @@
 import express from 'express';
 
-export const AppRouter = express.Router();
+const AppRouter = express.Router();
+
+export default AppRouter;

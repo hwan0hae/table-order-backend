@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const client = new Client({
+const client = new Client({
   user: process.env.DATABASE_ID,
   host: process.env.DATABASE_URL,
   database: process.env.DATABASE_DB,
@@ -18,3 +18,5 @@ client.connect((err) => {
     console.log('DB connect...');
   }
 });
+
+export default client;

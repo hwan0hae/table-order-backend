@@ -33,3 +33,11 @@ export interface IEditUserData {
   auth: string;
   status: string;
 }
+
+export interface IProductData {
+  id: number;
+  name: string;
+  price?: number;
+  description?: string;
+  image_url?: string;
+}

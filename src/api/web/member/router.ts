@@ -87,6 +87,7 @@ MemberRouter.get('/list', auth, async (req: Request, res: Response) => {
       ORDER BY created_at ASC`
     );
     const memberList = result.rows;
+
     return res.status(200).json(memberList);
   } catch (error: any) {
     console.error('/api/v1/web/member/list >> ', error);

@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import client from '../../../db/db';
 import authChecker from '../../../middleware/auth';
-import { signUpCheck, validate } from '../../../middleware/validator';
+import validate, { signUpCheck } from '../../../middleware/validator';
 import { IMemberSignUpData } from '../../../types/api';
 import { IUserSignUp } from '../../../types/data';
 
@@ -87,6 +87,7 @@ MemberRouter.get('/list', authChecker, async (req: Request, res: Response) => {
       ORDER BY created_at ASC`
     );
     const memberList = result.rows;
+
     return res.status(200).json(memberList);
   } catch (error: any) {
     console.error('/api/v1/web/member/list >> ', error);

@@ -8,9 +8,10 @@ import {
 
 const passwordRegExp = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,15}$/;
 
-export const validate = (schema: Schema) => {
+const validate = (schema: Schema) => {
   return [
     checkSchema(schema),
+    // eslint-disable-next-line consistent-return
     (req: Request, res: Response, next: NextFunction) => {
       const errors: Result = validationResult(req);
       console.log(errors);
@@ -74,3 +75,32 @@ export const signInCheck: Schema = {
     },
   },
 };
+
+export const menuAddCheck: Schema = {
+  name: {
+    exists: { errorMessage: '메뉴 이름을 입력해주세요.' },
+    in: 'body',
+  },
+  price: { in: 'body', isNumeric: true, optional: true },
+  description: { in: 'body', optional: true },
+};
+
+export const menuEditCheck: Schema = {
+  id: {
+    in: 'body',
+  },
+  name: {
+    exists: { errorMessage: '메뉴 이름을 입력해주세요.' },
+    in: 'body',
+  },
+  price: { in: 'body', isNumeric: true, optional: true },
+  description: { in: 'body', optional: true },
+};
+
+export const menuDeleteCheck: Schema = {
+  id: {
+    in: 'body',
+  },
+};
+
+export default validate;

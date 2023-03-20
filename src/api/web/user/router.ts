@@ -1,10 +1,9 @@
 import express, { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import {
+import validate, {
   signInCheck,
   signUpCheck,
-  validate,
 } from '../../../middleware/validator';
 import { IEditUserData, ISignInData, ISignUpData } from '../../../types/api';
 import client from '../../../db/db';

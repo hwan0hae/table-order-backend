@@ -1,6 +1,6 @@
 import { Auth } from './data';
 
-/**signUp body data */
+/** signUp body data */
 export interface ISignUpData {
   companyName: string;
   companyNumber: string;
@@ -11,7 +11,7 @@ export interface ISignUpData {
   auth: Auth;
 }
 
-/**member signUp body data */
+/** member signUp body data */
 export interface IMemberSignUpData {
   email: string;
   password: string;
@@ -32,4 +32,25 @@ export interface IEditUserData {
   phone: string;
   auth: string;
   status: string;
+}
+
+export interface IProductData {
+  id: number;
+  name: string;
+  price?: number;
+  description?: string;
+  image_url?: string;
+}
+
+export interface IProductAddData {
+  name: string;
+  price?: number;
+  description?: string;
+}
+
+export interface IProductEditData {
+  id: number;
+  name: string;
+  price?: number;
+  description?: string;
 }

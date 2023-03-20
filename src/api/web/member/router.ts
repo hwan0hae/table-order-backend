@@ -1,18 +1,18 @@
 import express, { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import { client } from '../../../db/db';
-import { auth } from '../../../middleware/auth';
-import { signUpCheck, validate } from '../../../middleware/validator';
+import client from '../../../db/db';
+import authChecker from '../../../middleware/auth';
+import validate, { signUpCheck } from '../../../middleware/validator';
 import { IMemberSignUpData } from '../../../types/api';
 import { IUserSignUp } from '../../../types/data';
 
-export const MemberRouter = express.Router();
+const MemberRouter = express.Router();
 
 /** 회사 Member 회원가입  */
 MemberRouter.post(
   '/signup',
   ...validate(signUpCheck),
-  auth,
+  authChecker,
   async (req: Request, res: Response) => {
     const data: IMemberSignUpData = req.body;
     const salt = Number(process.env.HASH_SALT);
@@ -50,25 +50,25 @@ MemberRouter.post(
         switch (errorType) {
           case 'User_email_key':
             return res.status(409).json({
-              error: error,
+              error,
               message: '이미 사용중인 이메일입니다.',
             });
           case 'User_phone_key':
             return res.status(409).json({
-              error: error,
+              error,
               message: '이미 사용중인 전화번호입니다.',
             });
 
           default:
             return res.status(409).json({
-              error: error,
+              error,
               message: '알 수 없는 에러입니다. 잠시후에 다시 시도해주세요!',
             });
         }
       }
 
       return res.status(400).json({
-        error: error,
+        error,
         message: '회원가입에 실패했습니다. 새로고침후에 시도해주세요.',
       });
     }
@@ -76,7 +76,7 @@ MemberRouter.post(
 );
 
 /** 회사 멤버 리스트 겟 요청 */
-MemberRouter.get('/list', auth, async (req: Request, res: Response) => {
+MemberRouter.get('/list', authChecker, async (req: Request, res: Response) => {
   const user = req.currentUser;
 
   try {
@@ -93,8 +93,10 @@ MemberRouter.get('/list', auth, async (req: Request, res: Response) => {
     console.error('/api/v1/web/member/list >> ', error);
 
     return res.status(400).json({
-      error: error,
+      error,
       message: '유저목록을 불러올 수 없습니다.',
     });
   }
 });
+
+export default MemberRouter;

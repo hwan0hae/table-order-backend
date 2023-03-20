@@ -17,10 +17,10 @@ export const imageUploader = multer({
     bucket: String(process.env.S3_BUCKET_NAME),
     contentType: multerS3.AUTO_CONTENT_TYPE,
     acl: 'public-read-write',
-    key: function (req: Request, file: Express.MulterS3.File, cb) {
-      const currentUser = req.currentUser;
+    key: (req: Request, file: Express.MulterS3.File, cb) => {
+      const user = req.currentUser;
 
-      const uploadDirectory = `${currentUser?.company_id}/menu`;
+      const uploadDirectory = `${user?.company_id}/menu`;
       cb(null, `${uploadDirectory}/${Date.now()}_${file.originalname}`);
     },
   }),

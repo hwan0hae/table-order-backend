@@ -23,13 +23,12 @@ MenuRouter.get('/list', authChecker, async (req: Request, res: Response) => {
 
   try {
     const result = await client.query(
-      `SELECT id,name,price,description,image_url
+      `SELECT id,name,price,description,image_url as "imageUrl"
        FROM product
       WHERE company_id=${user?.company_id}
       ORDER BY created_at ASC`
     );
     const menuList: IProductData[] = result.rows;
-
     return res.status(200).json(menuList);
   } catch (error: unknown) {
     console.error('/api/v1/web/menu/list >> ', error);

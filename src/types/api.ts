@@ -54,3 +54,17 @@ export interface IProductEditData {
   price?: number;
   description?: string;
 }
+
+export interface IBasketData {
+  id: number;
+  name: string;
+  price: string;
+  description: string;
+  imageUrl: string;
+  count: number;
+}
+
+export interface IOrderData {
+  tableNo: number;
+  order: IBasketData[];
+}

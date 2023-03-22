@@ -87,7 +87,7 @@ const authChecker = async (req: Request, res: Response, next: NextFunction) => {
       jwt.verify(
         refreshToken,
         String(process.env.JWT_REFRESH_SECRET),
-        (err, decode) => {
+        async (err, decode) => {
           if (err) {
             res.clearCookie('access_token');
             res.clearCookie('refresh_token');
@@ -96,13 +96,28 @@ const authChecker = async (req: Request, res: Response, next: NextFunction) => {
               .json({ message: '토큰이 유효하지 않습니다.' });
           }
           // access token 재발급
-          const accessToken = jwt.sign(
+          const newAccessToken = jwt.sign(
             { id: user.id },
             String(process.env.JWT_ACCESS_SECRET),
             { expiresIn: '30m', issuer: 'Hwan_0_hae' }
           );
 
-          return res.cookie('access_token', accessToken, {
+          // refresh Token 재발급
+          const newRefreshToken = jwt.sign(
+            { id: user.id, auth: user.auth },
+            String(process.env.JWT_REFRESH_SECRET),
+            { expiresIn: '24h', issuer: 'hwan_0_hae' }
+          );
+          await client.query(
+            `UPDATE "user" SET token='${newRefreshToken}', updated_at=now() WHERE id=${user.id}`
+          );
+
+          res.cookie('access_token', newAccessToken, {
+            secure: false,
+            httpOnly: true,
+          });
+
+          return res.cookie('refresh_token', newRefreshToken, {
             secure: false,
             httpOnly: true,
           });

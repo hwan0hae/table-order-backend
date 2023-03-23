@@ -103,4 +103,40 @@ export const menuDeleteCheck: Schema = {
   },
 };
 
+/** App */
+export const appSignInCheck: Schema = {
+  email: {
+    exists: { errorMessage: 'email을 입력해주세요.' },
+    in: 'body',
+    isEmail: { errorMessage: 'email 형식이 아닙니다.' },
+  },
+  password: {
+    exists: { errorMessage: '비밀번호를 입력해주세요.' },
+    in: 'body',
+    isLength: {
+      errorMessage: '패스워드는 최소 8자 이상 최대 16자 까지 입니다.',
+      options: { min: 8, max: 16 },
+    },
+    matches: {
+      options: passwordRegExp,
+      errorMessage:
+        '비밀번호 형식이 틀립니다. 영문, 숫자 포함 8자리를 입력해주세요.',
+    },
+  },
+  tableNo: {
+    exists: { errorMessage: 'table No를 입력해주세요.' },
+    in: 'body',
+    isNumeric: true,
+  },
+};
+
+export const appAuthCheck: Schema = {
+  accessToken: {
+    in: 'body',
+  },
+  refreshToken: {
+    in: 'body',
+  },
+};
+
 export default validate;

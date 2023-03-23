@@ -73,7 +73,7 @@ const authChecker = async (req: Request, res: Response, next: NextFunction) => {
 
     if (error.name === 'TokenExpiredError') {
       const result = await client.query(
-        `SELECT token,id FROM "user" WHERE token='${refreshToken}' `
+        `SELECT * FROM "user" WHERE token='${refreshToken}' `
       );
 
       if (result.rows.length === 0) {

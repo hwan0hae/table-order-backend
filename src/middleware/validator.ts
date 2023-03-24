@@ -130,13 +130,4 @@ export const appSignInCheck: Schema = {
   },
 };
 
-export const appAuthCheck: Schema = {
-  accessToken: {
-    in: 'body',
-  },
-  refreshToken: {
-    in: 'body',
-  },
-};
-
 export default validate;

@@ -3,11 +3,9 @@ import bcrypt from 'bcrypt';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { IUser } from '../../../types/data';
 import client from '../../../db/db';
-import validate, {
-  appAuthCheck,
-  appSignInCheck,
-} from '../../../middleware/validator';
-import { IAppSignInData, IAppUserAuthData } from '../../../types/api';
+import validate, { appSignInCheck } from '../../../middleware/validator';
+import { IAppSignInData } from '../../../types/api';
+import appAuthChecker from '../../../middleware/appAuth';
 
 const UserRouter = express.Router();
 
@@ -55,14 +53,14 @@ UserRouter.post(
 
       // access Token 발급
       const accessToken = jwt.sign(
-        { id: user.id },
+        { id: user.id, tableNo },
         String(process.env.JWT_ACCESS_SECRET),
         { expiresIn: '30m', issuer: 'hwan_0_hae' }
       );
 
       // refresh Token 발급
       const refreshToken = jwt.sign(
-        { id: user.id },
+        { id: user.id, tableNo },
         String(process.env.JWT_REFRESH_SECRET),
         { expiresIn: '24h', issuer: 'hwan_0_hae' }
       );
@@ -86,66 +84,64 @@ UserRouter.post(
   }
 );
 
-UserRouter.post(
-  '/auth',
-  ...validate(appAuthCheck),
-  async (req: Request, res: Response) => {
-    const { accessToken, refreshToken, tableNo }: IAppUserAuthData = req.body;
-    // 검증 갱신 만료됐으면 만료됐다 응답하고 앱에서 데이터삭제 + signin으로 리다이랙트
+UserRouter.get('/refreshtoken', async (req: Request, res: Response) => {
+  let token = req.header('Authorization');
+  if (token) {
+    token = token.replace(/^Bearer\s+/, '');
     try {
-      const decoded = jwt.verify(
-        accessToken,
-        String(process.env.JWT_ACCESS_SECRET)
-      ) as JwtPayload;
-
-      return res.status(200).json({
-        message: '로그인 되었습니다.',
-      });
-    } catch (error: any) {
-      console.error('/api/v1/app/user/auth >> ', error);
-
-      if (error.name === 'TokenExpiredError') {
-        const result = await client.query(
-          `SELECT id FROM "user" WHERE token='${refreshToken}' `
-        );
-
-        if (result.rows.length === 0) {
-          return res.status(401).json({ message: '토큰이 유효하지 않습니다.' });
-        }
-        const user: { id: number } = result.rows[0];
-
-        // access Token 재발급
-        const newAccessToken = jwt.sign(
-          { id: user.id },
-          String(process.env.JWT_ACCESS_SECRET),
-          { expiresIn: '30m', issuer: 'hwan_0_hae' }
-        );
-
-        // refresh Token 재발급
-        const newRefreshToken = jwt.sign(
-          { id: user.id },
-          String(process.env.JWT_REFRESH_SECRET),
-          { expiresIn: '24h', issuer: 'hwan_0_hae' }
-        );
-
-        await client.query(
-          `UPDATE "user" SET token='${newRefreshToken}', updated_at=now() WHERE id=${user.id}`
-        );
-
-        return res.status(200).json({
-          data: {
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken,
-            tableNo,
-          },
-          message: '로그인 되었습니다.',
-        });
+      const result = await client.query(
+        `SELECT id FROM "user" WHERE token='${token}' `
+      );
+      if (result.rows.length === 0) {
+        return res.status(401).json({ message: '토큰이 유효하지 않습니다.' });
       }
 
-      return res.status(400).json({
-        error,
-        message: '로그인에 실패했습니다. 앱을 재실행 후 시도해주세요!',
+      const decode = jwt.verify(
+        token,
+        String(process.env.JWT_REFRESH_SECRET)
+      ) as JwtPayload;
+      // access Token 재발급
+      const newAccessToken = jwt.sign(
+        { id: decode.id, tableNo: decode.tableNo },
+        String(process.env.JWT_ACCESS_SECRET),
+        { expiresIn: '30m', issuer: 'hwan_0_hae' }
+      );
+
+      // refresh Token 재발급
+      const newRefreshToken = jwt.sign(
+        { id: decode.id, tableNo: decode.tableNo },
+        String(process.env.JWT_REFRESH_SECRET),
+        { expiresIn: '24h', issuer: 'hwan_0_hae' }
+      );
+
+      await client.query(
+        `UPDATE "user" SET token='${newRefreshToken}', updated_at=now() WHERE id=${decode.id}`
+      );
+      return res.status(200).json({
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
       });
+    } catch (error: any) {
+      console.error('/api/v1/app/user/refreshtoken  >> ', error);
+      return res.status(401).json(error);
+    }
+  } else {
+    return res
+      .status(401)
+      .json({ message: '리프레시 토큰이 존재하지 않습니다.' });
+  }
+});
+
+UserRouter.post(
+  '/play',
+  appAuthChecker,
+  async (req: Request, res: Response) => {
+    try {
+      return res.status(200).json();
+    } catch (error) {
+      console.error('/api/v1/app/user/play  >> ', error);
+
+      return res.status(401).json(error);
     }
   }
 );

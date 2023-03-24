@@ -61,11 +61,6 @@ export interface IAppSignInData {
   password: string;
   tableNo: number;
 }
-export interface IAppUserAuthData {
-  tableNo: number;
-  accessToken: string;
-  refreshToken: string;
-}
 export interface IBasketData {
   id: number;
   name: string;

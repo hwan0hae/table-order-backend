@@ -13,5 +13,9 @@ declare namespace Express {
       status: Status;
       token: string;
     } | null;
+    appCurrentUser: {
+      id: number;
+      tableNo: number;
+    };
   }
 }

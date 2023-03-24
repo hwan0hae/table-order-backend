@@ -1,10 +1,11 @@
 import express, { Request, Response } from 'express';
+import appAuthChecker from '../../../middleware/appAuth';
 import client from '../../../db/db';
 
 // auth 미들웨어
 const MenuRouter = express.Router();
 
-MenuRouter.get('/list', async (req: Request, res: Response) => {
+MenuRouter.get('/list', appAuthChecker, async (req: Request, res: Response) => {
   // 임의값 부여
   try {
     const companyId = 6;

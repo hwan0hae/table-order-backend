@@ -89,7 +89,7 @@ UserRouter.post(
             });
 
           default:
-            return res.status(409).json({
+            return res.status(400).json({
               error,
               message: '알 수 없는 에러입니다. 잠시후에 다시 시도해주세요!',
             });

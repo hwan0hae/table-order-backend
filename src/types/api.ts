@@ -74,3 +74,10 @@ export interface IOrderData {
   tableNo: number;
   order: IBasketData[];
 }
+
+export interface ITableAddData {
+  tableNo: number;
+  name?: string;
+  locX?: number;
+  locY?: number;
+}

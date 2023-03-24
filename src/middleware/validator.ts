@@ -102,6 +102,28 @@ export const menuDeleteCheck: Schema = {
     in: 'body',
   },
 };
+export const tableAddCheck: Schema = {
+  tableNo: {
+    exists: { errorMessage: '테이블 번호를 입력해주세요.' },
+    in: 'body',
+    isNumeric: true,
+  },
+  name: {
+    in: 'body',
+    isString: true,
+    optional: true,
+  },
+  locX: {
+    in: 'body',
+    isNumeric: true,
+    optional: true,
+  },
+  locY: {
+    in: 'body',
+    isNumeric: true,
+    optional: true,
+  },
+};
 
 /** App */
 export const appSignInCheck: Schema = {

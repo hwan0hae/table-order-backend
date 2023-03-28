@@ -43,15 +43,13 @@ MenuRouter.get('/list', authChecker, async (req: Request, res: Response) => {
 /** 메뉴 추가 */
 MenuRouter.post(
   '/add',
-  ...validate(menuAddCheck),
   authChecker,
   multer,
+  ...validate(menuAddCheck),
   async (req: Request, res: Response) => {
     const user = req.currentUser;
     const { body, file } = req;
     const data: IProductAddData = { ...body, price: Number(body.price) };
-
-    console.log(typeof data.price);
 
     let imageUrl = '';
     try {

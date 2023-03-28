@@ -1,5 +1,7 @@
+import { ITable } from '@src/types/data';
 import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import client from '../db/db';
 
 const appAuthChecker = async (
   req: Request,
@@ -10,12 +12,22 @@ const appAuthChecker = async (
   if (token) {
     token = token.replace(/^Bearer\s+/, '');
     try {
-      const decoded = jwt.verify(
+      const decode = jwt.verify(
         token,
         String(process.env.JWT_ACCESS_SECRET)
       ) as JwtPayload;
+      console.log(decode.tableId);
+      const result = await client.query(
+        `SELECT * FROM table_management WHERE id=${decode.tableId}`
+      );
 
-      req.appCurrentUser = { id: decoded.id, tableNo: decoded.tableNo };
+      if (result.rows.length === 0) {
+        console.log('aaaa');
+        return res.status(401).json({ message: '존재하지 않는 테이블입니다.' });
+      }
+
+      const currentTable: ITable = result.rows[0];
+      req.appCurrentTable = { ...currentTable };
     } catch (error: any) {
       console.error('appAuth >> ', error);
 

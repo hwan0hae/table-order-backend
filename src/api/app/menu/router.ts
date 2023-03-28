@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import appAuthChecker from '../../../middleware/appAuth';
 import client from '../../../db/db';
+import { ITable } from '../../../types/data';
 
 // auth 미들웨어
 const MenuRouter = express.Router();
@@ -8,15 +9,17 @@ const MenuRouter = express.Router();
 MenuRouter.get('/list', appAuthChecker, async (req: Request, res: Response) => {
   // 임의값 부여
   try {
-    const companyId = 6;
+    const table = req.appCurrentTable;
+    console.log(table.company_id);
 
     const result = await client.query(
       `SELECT id, name, price, description, image_url as "imageUrl"
       FROM product 
-      WHERE company_id = ${companyId}
+      WHERE company_id = ${table.company_id}
       ORDER BY created_at ASC`
     );
     const menuList = result.rows;
+    console.log(menuList);
     return res.status(200).json(menuList);
   } catch (error: any) {
     console.error('/api/v1/app/menu/list >> ', error);

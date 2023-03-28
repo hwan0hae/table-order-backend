@@ -17,7 +17,7 @@ ManagementRouter.post(
     console.log(typeof locX);
     try {
       await client.query(
-        `INSERT INTO management (table_no, name, loc_x, loc_y, company_id)
+        `INSERT INTO table_management (table_no, name, loc_x, loc_y, company_id)
       VALUES ($1,$2,$3,$4,$5) `,
         [tableNo, name, locX, locY, user?.company_id]
       );

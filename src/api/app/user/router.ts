@@ -25,7 +25,7 @@ UserRouter.post(
       }
       const user: IUser = result.rows[0];
 
-      if (user.status === 0) {
+      if (user.status === '0') {
         return res.status(401).json({
           message: '회원탈퇴한 계정입니다. 고객센터에 문의해주세요.',
         });
@@ -39,7 +39,7 @@ UserRouter.post(
         });
       }
 
-      if (user.status === 2) {
+      if (user.status === '2') {
         return res.status(401).json({
           message: '정지되어있는 계정입니다. 고객센터에 문의해주세요.',
         });
@@ -51,16 +51,27 @@ UserRouter.post(
         });
       }
 
+      const tableResult = await client.query(
+        `SELECT id FROM table_management WHERE table_no = ${tableNo}`
+      );
+
+      if (tableResult.rows.length === 0) {
+        return res
+          .status(401)
+          .json({ message: '존재하지 않는 테이블 번호입니다.' });
+      }
+      const table: { id: number } = tableResult.rows[0];
+
       // access Token 발급
       const accessToken = jwt.sign(
-        { id: user.id, tableNo },
+        { id: user.id, tableId: table.id },
         String(process.env.JWT_ACCESS_SECRET),
         { expiresIn: '30m', issuer: 'hwan_0_hae' }
       );
 
       // refresh Token 발급
       const refreshToken = jwt.sign(
-        { id: user.id, tableNo },
+        { id: user.id, tableId: table.id },
         String(process.env.JWT_REFRESH_SECRET),
         { expiresIn: '24h', issuer: 'hwan_0_hae' }
       );
@@ -102,14 +113,14 @@ UserRouter.get('/refreshtoken', async (req: Request, res: Response) => {
       ) as JwtPayload;
       // access Token 재발급
       const newAccessToken = jwt.sign(
-        { id: decode.id, tableNo: decode.tableNo },
+        { id: decode.id, tableId: decode.tableId },
         String(process.env.JWT_ACCESS_SECRET),
         { expiresIn: '30m', issuer: 'hwan_0_hae' }
       );
 
       // refresh Token 재발급
       const newRefreshToken = jwt.sign(
-        { id: decode.id, tableNo: decode.tableNo },
+        { id: decode.id, tableId: decode.tableId },
         String(process.env.JWT_REFRESH_SECRET),
         { expiresIn: '24h', issuer: 'hwan_0_hae' }
       );
@@ -137,7 +148,7 @@ UserRouter.post(
   appAuthChecker,
   async (req: Request, res: Response) => {
     try {
-      return res.status(200).json();
+      return res.status(200).json({ success: true });
     } catch (error) {
       console.error('/api/v1/app/user/play  >> ', error);
 

@@ -120,7 +120,7 @@ UserRouter.post(
         return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
       }
       const user: IUser = result.rows[0];
-      if (user.status === 0) {
+      if (user.status === '0') {
         return res.status(401).json({
           message: '회원탈퇴한 계정입니다. 고객센터에 문의해주세요.',
         });
@@ -134,7 +134,7 @@ UserRouter.post(
         });
       }
 
-      if (user.status === 2) {
+      if (user.status === '2') {
         return res.status(401).json({
           message: '정지되어있는 계정입니다. 고객센터에 문의해주세요.',
         });

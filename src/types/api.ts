@@ -71,7 +71,6 @@ export interface IBasketData {
 }
 
 export interface IOrderData {
-  tableNo: number;
   order: IBasketData[];
 }
 

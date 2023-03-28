@@ -9,13 +9,22 @@ declare namespace Express {
       company_id: number;
       created_at: Date;
       updated_at: Date;
-      auth: Auth;
-      status: Status;
+      auth: 'OWNER' | 'ADMIN' | 'STAFF' | 'USER';
+      status: '0' | '1' | '2';
       token: string;
     } | null;
-    appCurrentUser: {
+
+    appCurrentTable: {
       id: number;
-      tableNo: number;
+      name?: string;
+      table_no: number;
+      loc_x: number;
+      loc_y: number;
+      type?: number;
+      status: '0' | '1' | '2' | '3';
+      company_id: number;
+      created_at: Date;
+      updated_at: Date;
     };
   }
 }

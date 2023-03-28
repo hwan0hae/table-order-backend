@@ -16,13 +16,11 @@ const appAuthChecker = async (
         token,
         String(process.env.JWT_ACCESS_SECRET)
       ) as JwtPayload;
-      console.log(decode.tableId);
       const result = await client.query(
         `SELECT * FROM table_management WHERE id=${decode.tableId}`
       );
 
       if (result.rows.length === 0) {
-        console.log('aaaa');
         return res.status(401).json({ message: '존재하지 않는 테이블입니다.' });
       }
 

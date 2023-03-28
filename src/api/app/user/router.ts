@@ -76,8 +76,11 @@ UserRouter.post(
         { expiresIn: '24h', issuer: 'hwan_0_hae' }
       );
 
-      client.query(
+      await client.query(
         `UPDATE "user" SET token='${refreshToken}', updated_at=now() WHERE id=${user.id}`
+      );
+      await client.query(
+        `UPDATE table_management SET status='2', updated_at=now() WHERE id=${table.id}`
       );
 
       return res.status(200).json({
@@ -128,12 +131,14 @@ UserRouter.get('/refreshtoken', async (req: Request, res: Response) => {
       await client.query(
         `UPDATE "user" SET token='${newRefreshToken}', updated_at=now() WHERE id=${decode.id}`
       );
+
       return res.status(200).json({
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
       });
     } catch (error: any) {
       console.error('/api/v1/app/user/refreshtoken  >> ', error);
+
       return res.status(401).json(error);
     }
   } else {

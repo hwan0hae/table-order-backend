@@ -10,7 +10,6 @@ MenuRouter.get('/list', appAuthChecker, async (req: Request, res: Response) => {
   // 임의값 부여
   try {
     const table = req.appCurrentTable;
-    console.log(table.company_id);
 
     const result = await client.query(
       `SELECT id, name, price, description, image_url as "imageUrl"
@@ -19,7 +18,6 @@ MenuRouter.get('/list', appAuthChecker, async (req: Request, res: Response) => {
       ORDER BY created_at ASC`
     );
     const menuList = result.rows;
-    console.log(menuList);
     return res.status(200).json(menuList);
   } catch (error: any) {
     console.error('/api/v1/app/menu/list >> ', error);

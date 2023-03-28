@@ -71,7 +71,8 @@ export interface IBasketData {
 }
 
 export interface IOrderData {
-  order: IBasketData[];
+  productId: number;
+  count: number;
 }
 
 export interface ITableAddData {

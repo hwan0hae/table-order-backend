@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { IOrderData } from '../../../types/api';
 import { socketArr } from '../../../socket/socket';
 import appAuthChecker from '../../../middleware/appAuth';
+import client from '../../../db/db';
 
 const OrderRouter = express.Router();
 
@@ -9,8 +10,30 @@ OrderRouter.post(
   '/request',
   appAuthChecker,
   async (req: Request, res: Response) => {
-    const data: IOrderData = req.body;
+    const table = req.appCurrentTable;
+    const data: IOrderData[] = req.body;
     try {
+      await client.query(
+        `UPDATE table_management SET status='3', updated_at=now() WHERE id=${table.id}`
+      );
+
+      client.query(
+        `INSERT INTO "order" (company_id, table_id)
+            VALUES ($1,$2) RETURNING order_id`,
+        [table.company_id, table.id],
+        (err, result) => {
+          if (err) throw err;
+
+          data.map(async (order) => {
+            await client.query(
+              `INSERT INTO "order_detail" (order_id, product_id, count)
+                  VALUES ($1,$2,$3)`,
+              [result.rows[0].order_id, order.productId, order.count]
+            );
+          });
+        }
+      );
+
       socketArr.map((socket, index) => {
         return socket.emit('orderData', data);
       });

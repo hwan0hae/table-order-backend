@@ -17,7 +17,7 @@ const appAuthChecker = async (
         String(process.env.JWT_ACCESS_SECRET)
       ) as JwtPayload;
       const result = await client.query(
-        `SELECT * FROM table_management WHERE id=${decode.tableId}`
+        `SELECT * FROM table_management WHERE table_id=${decode.tableId}`
       );
 
       if (result.rows.length === 0) {
@@ -25,6 +25,7 @@ const appAuthChecker = async (
       }
 
       const currentTable: ITable = result.rows[0];
+
       req.appCurrentTable = { ...currentTable };
     } catch (error: any) {
       console.error('appAuth >> ', error);

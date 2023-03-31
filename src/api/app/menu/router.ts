@@ -7,7 +7,6 @@ import { ITable } from '../../../types/data';
 const MenuRouter = express.Router();
 
 MenuRouter.get('/list', appAuthChecker, async (req: Request, res: Response) => {
-  // 임의값 부여
   try {
     const table = req.appCurrentTable;
 

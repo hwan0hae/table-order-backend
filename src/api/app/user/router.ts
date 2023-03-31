@@ -50,9 +50,8 @@ UserRouter.post(
           message: 'USER 계정이 아닙니다. 다시 확인해주세요.',
         });
       }
-
       const tableResult = await client.query(
-        `SELECT id FROM table_management WHERE table_no = ${tableNo}`
+        `SELECT * FROM table_management WHERE table_no = ${tableNo}`
       );
 
       if (tableResult.rows.length === 0) {
@@ -60,18 +59,18 @@ UserRouter.post(
           .status(401)
           .json({ message: '존재하지 않는 테이블 번호입니다.' });
       }
-      const table: { id: number } = tableResult.rows[0];
-
+      const table: { table_id: number } = tableResult.rows[0];
+      console.log(tableResult.rows);
       // access Token 발급
       const accessToken = jwt.sign(
-        { id: user.id, tableId: table.id },
+        { id: user.id, tableId: table.table_id },
         String(process.env.JWT_ACCESS_SECRET),
         { expiresIn: '30m', issuer: 'hwan_0_hae' }
       );
 
       // refresh Token 발급
       const refreshToken = jwt.sign(
-        { id: user.id, tableId: table.id },
+        { id: user.id, tableId: table.table_id },
         String(process.env.JWT_REFRESH_SECRET),
         { expiresIn: '24h', issuer: 'hwan_0_hae' }
       );
@@ -80,7 +79,7 @@ UserRouter.post(
         `UPDATE "user" SET token='${refreshToken}', updated_at=now() WHERE id=${user.id}`
       );
       await client.query(
-        `UPDATE table_management SET status='2', updated_at=now() WHERE id=${table.id}`
+        `UPDATE table_management SET status='2', updated_at=now() WHERE table_id=${table.table_id}`
       );
 
       return res.status(200).json({
@@ -114,6 +113,7 @@ UserRouter.get('/refreshtoken', async (req: Request, res: Response) => {
         token,
         String(process.env.JWT_REFRESH_SECRET)
       ) as JwtPayload;
+
       // access Token 재발급
       const newAccessToken = jwt.sign(
         { id: decode.id, tableId: decode.tableId },

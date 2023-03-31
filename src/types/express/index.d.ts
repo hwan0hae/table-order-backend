@@ -15,7 +15,7 @@ declare namespace Express {
     } | null;
 
     appCurrentTable: {
-      id: number;
+      table_id: number;
       name?: string;
       table_no: number;
       loc_x: number;

@@ -1,7 +1,13 @@
-import { Client } from 'pg';
+import { Client, types } from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
+
+// data parsing
+(BigInt.prototype as any).toJSON = function () {
+  return Number(this);
+};
+types.setTypeParser(20, BigInt);
 
 const client = new Client({
   user: process.env.DATABASE_ID,

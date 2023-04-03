@@ -1,5 +1,7 @@
-import { Client, types } from 'pg';
+import { types, Pool } from 'pg';
 import dotenv from 'dotenv';
+
+const pool = new Pool();
 
 dotenv.config();
 
@@ -9,7 +11,7 @@ dotenv.config();
 };
 types.setTypeParser(20, BigInt);
 
-const client = new Client({
+const client = new Pool({
   user: process.env.DATABASE_ID,
   host: process.env.DATABASE_URL,
   database: process.env.DATABASE_DB,

@@ -29,6 +29,7 @@ MenuRouter.get('/list', authChecker, async (req: Request, res: Response) => {
       ORDER BY created_at ASC`
     );
     const menuList: IProductData[] = result.rows;
+
     return res.status(200).json(menuList);
   } catch (error: unknown) {
     console.error('/api/v1/web/menu/list >> ', error);
@@ -53,6 +54,8 @@ MenuRouter.post(
 
     let imageUrl = '';
     try {
+      await client.query('BEGIN');
+
       if (file) imageUrl = (file as Express.MulterS3.File).location;
 
       await client.query(
@@ -67,11 +70,13 @@ MenuRouter.post(
           user?.id,
         ]
       );
+      await client.query('COMMIT');
 
       return res.status(200).json({
         message: '메뉴가 추가되었습니다.',
       });
     } catch (error: any) {
+      await client.query('ROLLBACK');
       console.error('/api/v1/web/menu/add >> ', error);
 
       return res.status(500).json({
@@ -97,6 +102,7 @@ MenuRouter.post(
     };
 
     try {
+      await client.query('BEGIN');
       if (file) {
         const imageUrl = (file as Express.MulterS3.File).location;
 
@@ -117,6 +123,7 @@ MenuRouter.post(
         SET name='${data.name}', price=${data.price}, description='${data.description}',image_url='${imageUrl}',updated_at=now()
         WHERE id=${data.id}`
         );
+        await client.query('COMMIT');
 
         return res.status(200).json({
           message: '메뉴가 수정되었습니다.',
@@ -128,11 +135,13 @@ MenuRouter.post(
       SET name='${data.name}', price=${data.price}, description='${data.description}',updated_at=now()
       WHERE id=${data.id}`
       );
+      await client.query('COMMIT');
 
       return res.status(200).json({
         message: '메뉴가 수정되었습니다.',
       });
     } catch (error: any) {
+      await client.query('ROLLBACK');
       console.error('/api/v1/web/menu/edit >> ', error);
 
       return res.status(500).json({
@@ -151,6 +160,8 @@ MenuRouter.post(
     const user = req.currentUser;
     const { id }: { id: number } = req.body;
     try {
+      await client.query('BEGIN');
+
       const imageUrlResult = await client.query(
         `SELECT image_url FROM product WHERE id=${id}`
       );
@@ -164,11 +175,13 @@ MenuRouter.post(
       }
 
       await client.query(`DELETE FROM product WHERE id=${id}`);
+      await client.query('COMMIT');
 
       return res.status(200).json({
         message: '메뉴가 삭제되었습니다.',
       });
     } catch (error: any) {
+      await client.query('ROLLBACK');
       console.error('/api/v1/web/menu/delete >> ', error);
 
       return res.status(500).json({

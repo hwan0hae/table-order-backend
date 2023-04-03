@@ -26,6 +26,7 @@ UserRouter.post(
     const salt = Number(process.env.HASH_SALT);
 
     try {
+      await client.query('BEGIN');
       /** company 생성 */
       await client.query(
         `INSERT INTO company (name, company_number)
@@ -57,11 +58,13 @@ UserRouter.post(
           userData.companyId,
         ]
       );
+      await client.query('COMMIT');
 
       return res.status(200).json({
         message: '회원가입에 성공했습니다. 로그인 페이지로 이동합니다.',
       });
     } catch (error: any) {
+      await client.query('ROLLBACK');
       console.error('/api/v1/web/user/signup >> ', error);
 
       if (error.code === '23505') {
@@ -112,6 +115,7 @@ UserRouter.post(
     const { email, password }: ISignInData = req.body;
 
     try {
+      await client.query('BEGIN');
       const result = await client.query(
         `SELECT * FROM "user" WHERE email = '${email}'`
       );
@@ -183,11 +187,13 @@ UserRouter.post(
         companyId: user.company_id,
         companyName,
       };
+      await client.query('COMMIT');
 
       return res
         .status(200)
         .json({ data: userInfo, message: '로그인 되었습니다.' });
     } catch (error: any) {
+      await client.query('ROLLBACK');
       console.error('/api/v1/web/user/signin >> ', error);
 
       return res.status(400).json({
@@ -197,23 +203,6 @@ UserRouter.post(
     }
   }
 );
-
-UserRouter.post('/logout', async (req: Request, res: Response) => {
-  try {
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
-    return res.status(200).json({
-      message: '로그아웃 되었습니다.',
-    });
-  } catch (error: any) {
-    console.error('/api/v1/web/user/logout >> ', error);
-
-    return res.status(400).json({
-      error,
-      message: '로그아웃에 실패했습니다. 새로고침후에 시도해주세요!',
-    });
-  }
-});
 
 /** 로그아웃 */
 UserRouter.post('/logout', async (req: Request, res: Response) => {
@@ -238,14 +227,19 @@ UserRouter.post('/logout', async (req: Request, res: Response) => {
 UserRouter.post('/delete', authChecker, async (req: Request, res: Response) => {
   const { id }: { id: number } = req.body;
   try {
+    await client.query('BEGIN');
+
     client.query(
       `UPDATE "user" SET status='0' , updated_at=now() WHERE id=${id}`
     );
+
+    await client.query('COMMIT');
 
     return res.status(200).json({
       message: '회원이 삭제되었습니다.',
     });
   } catch (error: any) {
+    await client.query('ROLLBACK');
     console.error('/api/v1/web/user/delete >> ', error);
 
     return res.status(400).json({
@@ -260,16 +254,20 @@ UserRouter.post('/edit', authChecker, async (req: Request, res: Response) => {
   const { id, email, name, phone, auth, status }: IEditUserData = req.body;
 
   try {
+    await client.query('BEGIN');
+
     client.query(
       `UPDATE "user" 
       SET name='${name}', phone='${phone}', auth='${auth}', status='${status}', updated_at=now() 
       WHERE id=${id}`
     );
+    await client.query('COMMIT');
 
     return res.status(200).json({
       message: '정보가 수정되었습니다.',
     });
   } catch (error: any) {
+    await client.query('ROLLBACK');
     console.error('/api/v1/web/user/edit >> ', error);
 
     return res.status(400).json({

@@ -54,3 +54,47 @@ export interface IProductEditData {
   price?: number;
   description?: string;
 }
+
+/** App */
+export interface IAppSignInData {
+  email: string;
+  password: string;
+  tableNo: number;
+}
+export interface IBasketData {
+  id: number;
+  name: string;
+  price: string;
+  description: string;
+  imageUrl: string;
+  count: number;
+}
+
+export interface IOrderData {
+  productId: number;
+  count: number;
+}
+// export interface IOrderTotalData {
+//   count: number;
+// }
+
+export interface ITableAddData {
+  tableNo: number;
+  name?: string;
+  locX?: number;
+  locY?: number;
+}
+
+export interface IGetOrderRequest {
+  orderId: number;
+  tableNo: number;
+  createdAt: Date;
+}
+export interface IGetOrderDetailRequest {
+  orderId: number;
+  detailId: number;
+  productName: string;
+  productPrice: number;
+  productCount: number;
+  createdAt: Date;
+}

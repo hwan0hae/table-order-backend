@@ -1,7 +1,7 @@
 import { Server } from 'http';
 import socketIO, { Socket } from 'socket.io';
 
-const socketArr = new Array<Socket>();
+export const socketArr = new Array<Socket>();
 
 const socketServer = (server: Server) => {
   const io = new socketIO.Server(server, {

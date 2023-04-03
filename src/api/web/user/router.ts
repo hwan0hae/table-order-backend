@@ -89,7 +89,7 @@ UserRouter.post(
             });
 
           default:
-            return res.status(409).json({
+            return res.status(400).json({
               error,
               message: '알 수 없는 에러입니다. 잠시후에 다시 시도해주세요!',
             });
@@ -120,16 +120,12 @@ UserRouter.post(
         return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
       }
       const user: IUser = result.rows[0];
-      if (user.status === 0) {
+      if (user.status === '0') {
         return res.status(401).json({
           message: '회원탈퇴한 계정입니다. 고객센터에 문의해주세요.',
         });
       }
-      if (user.status === 2) {
-        return res.status(401).json({
-          message: '정지되어있는 계정입니다. 고객센터에 문의해주세요.',
-        });
-      }
+
       const isCompare = await bcrypt.compare(password, user.password);
 
       if (!isCompare) {
@@ -137,6 +133,13 @@ UserRouter.post(
           message: '비밀번호가 일치하지 않습니다.',
         });
       }
+
+      if (user.status === '2') {
+        return res.status(401).json({
+          message: '정지되어있는 계정입니다. 고객센터에 문의해주세요.',
+        });
+      }
+
       // access Token 발급
       const accessToken = jwt.sign(
         { id: user.id, auth: user.auth },
@@ -183,7 +186,7 @@ UserRouter.post(
 
       return res
         .status(200)
-        .json({ data: userInfo, message: '로그인에 성공했습니다.' });
+        .json({ data: userInfo, message: '로그인 되었습니다.' });
     } catch (error: any) {
       console.error('/api/v1/web/user/signin >> ', error);
 

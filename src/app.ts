@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import WebRouter from './api/web/WebRouter';
 import socketServer from './socket/socket';
+import AppRouter from './api/app/AppRouter';
 
 dotenv.config();
 
@@ -20,7 +21,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(WEB_API_URL, WebRouter);
-
+app.use(APP_API_URL, AppRouter);
 socketServer(server);
 
 const port = process.env.PORT;

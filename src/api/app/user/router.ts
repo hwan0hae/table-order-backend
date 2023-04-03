@@ -62,7 +62,6 @@ UserRouter.post(
           .json({ message: '존재하지 않는 테이블 번호입니다.' });
       }
       const table: { table_id: number } = tableResult.rows[0];
-      console.log(tableResult.rows);
       // access Token 발급
       const accessToken = jwt.sign(
         { id: user.id, tableId: table.table_id },

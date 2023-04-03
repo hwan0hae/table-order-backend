@@ -81,7 +81,7 @@ MemberRouter.get('/list', authChecker, async (req: Request, res: Response) => {
 
   try {
     const result = await client.query(
-      `SELECT id, email, name, phone, auth, status, created_at, updated_at 
+      `SELECT id, email, name, phone, auth, status, created_at as "createdAt" , updated_at as "updatedAt"
       FROM "user" 
       WHERE company_id = '${user?.company_id}' AND status = '1'
       ORDER BY created_at ASC`

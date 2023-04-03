@@ -17,6 +17,8 @@ OrderRouter.post(
     const table = req.appCurrentTable;
     const data: IOrderData[] = req.body;
     try {
+      await client.query('BEGIN');
+
       await client.query(
         `UPDATE table_management SET status='3', updated_at=now() WHERE table_id=${table.table_id}`
       );
@@ -78,9 +80,11 @@ OrderRouter.post(
           });
         }
       );
+      await client.query('COMMIT');
 
       return res.status(200).json({ message: '주문이 완료 되었습니다.' });
     } catch (error) {
+      await client.query('ROLLBACK');
       console.error('/api/v1/app/order/request >> ', error);
 
       return res.status(400).json({ error, message: '뭔가 에러가 떳씁니당.' });

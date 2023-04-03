@@ -16,6 +16,8 @@ UserRouter.post(
     const { email, password, tableNo }: IAppSignInData = req.body;
 
     try {
+      await client.query('BEGIN');
+
       const result = await client.query(
         `SELECT * FROM "user" WHERE email = '${email}'`
       );
@@ -81,12 +83,14 @@ UserRouter.post(
       await client.query(
         `UPDATE table_management SET status='2', updated_at=now() WHERE table_id=${table.table_id}`
       );
+      await client.query('COMMIT');
 
       return res.status(200).json({
         data: { accessToken, refreshToken, tableNo },
         message: '로그인 되었습니다.',
       });
     } catch (error) {
+      await client.query('ROLLBACK');
       console.error('/api/v1/app/user/signin >> ', error);
 
       return res.status(400).json({

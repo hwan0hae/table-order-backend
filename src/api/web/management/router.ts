@@ -13,16 +13,20 @@ ManagementRouter.post(
   async (req: Request, res: Response) => {
     const user = req.currentUser;
     const { tableNo, name, locX, locY }: ITableAddData = req.body;
-    console.log(locX);
-    console.log(typeof locX);
+
     try {
+      await client.query('BEGIN');
+
       await client.query(
         `INSERT INTO table_management (table_no, name, loc_x, loc_y, company_id)
       VALUES ($1,$2,$3,$4,$5) `,
         [tableNo, name, locX, locY, user?.company_id]
       );
+      await client.query('COMMIT');
+
       return res.status(200).json({ message: '테이블이 추가 되었습니다.' });
     } catch (error: any) {
+      await client.query('ROLLBACK');
       console.error('/api/v1/web/management/add >> ', error);
 
       if (error.code === '23505') {

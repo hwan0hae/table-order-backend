@@ -54,7 +54,7 @@ OrderRouter.post('/check', authChecker, async (req: Request, res: Response) => {
   const user = req.currentUser;
   const { orderId }: { orderId: number } = req.body;
   try {
-    client.query(
+    await client.query(
       `UPDATE "order" SET order_status=2, modified_at=now() WHERE order_id=${orderId} AND company_id=${user?.company_id}`
     );
 
@@ -73,7 +73,7 @@ OrderRouter.post(
     const user = req.currentUser;
     const { orderId }: { orderId: number } = req.body;
     try {
-      client.query(
+      await client.query(
         `UPDATE "order" SET order_status=0, modified_at=now() WHERE order_id=${orderId} AND company_id=${user?.company_id}`
       );
       return res.status(200).json({ message: '주문이 취소 되었습니다.' });

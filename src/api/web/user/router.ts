@@ -169,7 +169,7 @@ UserRouter.post(
         httpOnly: true,
       });
 
-      client.query(
+      await client.query(
         `UPDATE "user" SET token='${refreshToken}', updated_at=now() WHERE id=${user.id}`
       );
 
@@ -227,7 +227,7 @@ UserRouter.post('/logout', async (req: Request, res: Response) => {
 UserRouter.post('/delete', authChecker, async (req: Request, res: Response) => {
   const { id }: { id: number } = req.body;
   try {
-    client.query(
+    await client.query(
       `UPDATE "user" SET status='0' , updated_at=now() WHERE id=${id}`
     );
 
@@ -249,7 +249,7 @@ UserRouter.post('/edit', authChecker, async (req: Request, res: Response) => {
   const { id, email, name, phone, auth, status }: IEditUserData = req.body;
 
   try {
-    client.query(
+    await client.query(
       `UPDATE "user" 
       SET name='${name}', phone='${phone}', auth='${auth}', status='${status}', updated_at=now() 
       WHERE id=${id}`

@@ -1,7 +1,6 @@
 import express, { Request, Response } from 'express';
 import appAuthChecker from '../../../middleware/appAuth';
 import client from '../../../db/db';
-import { ITable } from '../../../types/data';
 
 // auth 미들웨어
 const MenuRouter = express.Router();

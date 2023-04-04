@@ -227,19 +227,14 @@ UserRouter.post('/logout', async (req: Request, res: Response) => {
 UserRouter.post('/delete', authChecker, async (req: Request, res: Response) => {
   const { id }: { id: number } = req.body;
   try {
-    await client.query('BEGIN');
-
     client.query(
       `UPDATE "user" SET status='0' , updated_at=now() WHERE id=${id}`
     );
-
-    await client.query('COMMIT');
 
     return res.status(200).json({
       message: '회원이 삭제되었습니다.',
     });
   } catch (error: any) {
-    await client.query('ROLLBACK');
     console.error('/api/v1/web/user/delete >> ', error);
 
     return res.status(400).json({
@@ -254,20 +249,16 @@ UserRouter.post('/edit', authChecker, async (req: Request, res: Response) => {
   const { id, email, name, phone, auth, status }: IEditUserData = req.body;
 
   try {
-    await client.query('BEGIN');
-
     client.query(
       `UPDATE "user" 
       SET name='${name}', phone='${phone}', auth='${auth}', status='${status}', updated_at=now() 
       WHERE id=${id}`
     );
-    await client.query('COMMIT');
 
     return res.status(200).json({
       message: '정보가 수정되었습니다.',
     });
   } catch (error: any) {
-    await client.query('ROLLBACK');
     console.error('/api/v1/web/user/edit >> ', error);
 
     return res.status(400).json({

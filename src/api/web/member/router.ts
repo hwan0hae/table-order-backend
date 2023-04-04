@@ -18,8 +18,6 @@ MemberRouter.post(
     const salt = Number(process.env.HASH_SALT);
 
     try {
-      await client.query('BEGIN');
-
       /** member 생성 */
       const hashPassword = await bcrypt.hash(data.password, salt);
       const userData: IUserSignUp = {
@@ -40,13 +38,11 @@ MemberRouter.post(
           userData.companyId,
         ]
       );
-      await client.query('COMMIT');
 
       return res.status(200).json({
         message: '회원이 추가되었습니다.',
       });
     } catch (error: any) {
-      await client.query('ROLLBACK');
       console.error('/api/v1/web/user/signup >> ', error);
 
       if (error.code === '23505') {

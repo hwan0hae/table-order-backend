@@ -1,8 +1,6 @@
 import { types, Pool } from 'pg';
 import dotenv from 'dotenv';
 
-const pool = new Pool();
-
 dotenv.config();
 
 // data parsing

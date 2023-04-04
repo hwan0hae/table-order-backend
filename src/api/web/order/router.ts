@@ -54,16 +54,12 @@ OrderRouter.post('/check', authChecker, async (req: Request, res: Response) => {
   const user = req.currentUser;
   const { orderId }: { orderId: number } = req.body;
   try {
-    await client.query('BEGIN');
-
     client.query(
       `UPDATE "order" SET order_status=2, modified_at=now() WHERE order_id=${orderId} AND company_id=${user?.company_id}`
     );
-    await client.query('COMMIT');
 
     return res.status(200).json({ message: '주문이 확인 되었습니다.' });
   } catch (error) {
-    await client.query('ROLLBACK');
     console.error('/api/v1/web/order/check >> ', error);
 
     return res.status(400).json({ error, message: '뭔가 에러가 떳씁니당.' });
@@ -77,16 +73,11 @@ OrderRouter.post(
     const user = req.currentUser;
     const { orderId }: { orderId: number } = req.body;
     try {
-      await client.query('BEGIN');
-
       client.query(
         `UPDATE "order" SET order_status=0, modified_at=now() WHERE order_id=${orderId} AND company_id=${user?.company_id}`
       );
-      await client.query('COMMIT');
-
       return res.status(200).json({ message: '주문이 취소 되었습니다.' });
     } catch (error) {
-      await client.query('ROLLBACK');
       console.error('/api/v1/web/order/cancel >> ', error);
 
       return res.status(400).json({ error, message: '뭔가 에러가 떳씁니당.' });

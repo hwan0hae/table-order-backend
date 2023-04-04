@@ -27,13 +27,13 @@ const authChecker = async (req: Request, res: Response, next: NextFunction) => {
 
     const user: IUser = result.rows[0];
 
-    const remainingTime = decoded.iat;
+    const remainingTime = decoded.exp;
 
     if (remainingTime) {
       // 토큰 만료일이 10분밖에 안남으면 토큰을 재발급합니다
-      if (Date.now() / 1000 - remainingTime > 60 * 10) {
+      if (Date.now() / 1000 - remainingTime < 60 * 10) {
         // DB 토큰과 일치한다면 유효한지 확인 후 토큰 재발급
-        if (user.token === req.cookies.refresh_token) {
+        if (user.token === refreshToken) {
           jwt.verify(
             refreshToken,
             String(process.env.JWT_REFRESH_SECRET),

@@ -4,7 +4,7 @@ import {
   IGetOrderRequest,
   IOrderData,
 } from '../../../types/api';
-import { socketArr } from '../../../socket/socket';
+import { socketIo } from '../../../socket/socket';
 import appAuthChecker from '../../../middleware/appAuth';
 import client from '../../../db/db';
 
@@ -74,9 +74,8 @@ OrderRouter.post(
         createdAt: result.rows[0].created_at,
       };
       const socketData = { ...orderData, orderDetail };
-      socketArr.map((socket) => {
-        return socket.emit('orderData', socketData);
-      });
+
+      socketIo[0].to(String(table.company_id)).emit('orderData', socketData);
 
       await client.query('COMMIT');
 

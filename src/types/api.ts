@@ -74,21 +74,25 @@ export interface IOrderData {
   productId: number;
   count: number;
 }
-// export interface IOrderTotalData {
-//   count: number;
-// }
 
 export interface ITableAddData {
-  tableNo: number;
   name?: string;
-  locX?: number;
-  locY?: number;
+  tableNo: number;
+  locX: number;
+  locY: number;
+  tableWidth: number;
+  tableHeight: number;
 }
 
 export interface IGetOrderRequest {
   orderId: number;
   tableNo: number;
   createdAt: Date;
+}
+
+export interface IGetOrderRecord extends IGetOrderRequest {
+  orderStatus: number;
+  modifiedAt: Date;
 }
 export interface IGetOrderDetailRequest {
   orderId: number;
@@ -97,4 +101,9 @@ export interface IGetOrderDetailRequest {
   productPrice: number;
   productCount: number;
   createdAt: Date;
+}
+
+export interface IGetTableDetailReference {
+  orderId: number;
+  modifiedAt: number;
 }

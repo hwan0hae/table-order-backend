@@ -108,7 +108,7 @@ OrderRouter.get('/record', authChecker, async (req: Request, res: Response) => {
         FROM "order" as "o"
         LEFT JOIN table_management as "t"
         ON o.table_id = t.table_id        
-        WHERE o.company_id = '${user?.company_id}' AND o.order_status != 1
+        WHERE o.company_id = '${user?.company_id}'
         ORDER BY o.modified_at DESC
         LIMIT ${maxData} OFFSET ${skipData}
         `

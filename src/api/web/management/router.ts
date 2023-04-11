@@ -78,11 +78,19 @@ ManagementRouter.post(
     try {
       await client.query('BEGIN');
 
+      /** 결제 처리 */
       await client.query(
         `UPDATE "order" 
         SET order_status=3, modified_at=now() 
-        WHERE table_id=${tableId} AND company_id=${user?.company_id}`
+        WHERE table_id=${tableId} AND company_id=${user?.company_id} AND order_status=2`
       );
+      /** 주문 확인 안된것들 취소처리 */
+      await client.query(
+        `UPDATE "order" 
+        SET order_status=0, modified_at=now() 
+        WHERE table_id=${tableId} AND company_id=${user?.company_id} AND order_status=1`
+      );
+      /** 테이블 결제 후 자리비움 처리 */
       await client.query(
         `UPDATE table_management 
         SET status='2', updated_at=now() 

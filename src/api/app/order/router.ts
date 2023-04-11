@@ -17,8 +17,6 @@ OrderRouter.post(
     const table = req.appCurrentTable;
     const data: IOrderData[] = req.body;
     try {
-      await client.query('BEGIN');
-
       await client.query(
         `UPDATE table_management SET status='3', updated_at=now() WHERE table_id=${table.table_id}`
       );
@@ -28,16 +26,16 @@ OrderRouter.post(
             VALUES ($1,$2) RETURNING order_id, created_at`,
         [table.company_id, table.table_id]
       );
-
       await Promise.all(
         data.map(async (order) => {
           await client.query(
-            `INSERT INTO "order_detail" (order_id, product_id, count)
-                  VALUES ($1,$2,$3)`,
+            `INSERT INTO order_detail (order_id, product_id, count)
+                  VALUES ($1,$2,$3) `,
             [result.rows[0].order_id, order.productId, order.count]
           );
         })
       );
+
       const detailResult = await client.query(
         `SELECT od.order_id as "orderId", od.detail_id as "detailId", p.name as "productName", p.price as "productPrice", od.count as "productCount", od.created_at as "createdAt"
             FROM order_detail as "od"
@@ -48,40 +46,19 @@ OrderRouter.post(
             `
       );
 
-      const orderDetail = detailResult.rows.map((detail) => {
-        const {
-          orderId,
-          detailId,
-          productName,
-          productPrice,
-          productCount,
-          createdAt,
-        } = detail;
-        const orderDetailData: IGetOrderDetailRequest = {
-          orderId,
-          detailId,
-          productName,
-          productPrice,
-          productCount,
-          createdAt,
-        };
-        return orderDetailData;
-      });
+      const orderDetail: IGetOrderDetailRequest[] = detailResult.rows;
 
       const orderData: IGetOrderRequest = {
         orderId: result.rows[0].order_id,
         tableNo: table.table_no,
         createdAt: result.rows[0].created_at,
       };
+
       const socketData = { ...orderData, orderDetail };
-
       socketIo[0].to(String(table.company_id)).emit('orderData', socketData);
-
-      await client.query('COMMIT');
 
       return res.status(200).json({ message: '주문이 완료 되었습니다.' });
     } catch (error) {
-      await client.query('ROLLBACK');
       console.error('/api/v1/app/order/request >> ', error);
 
       return res.status(400).json({ error, message: '뭔가 에러가 떳씁니당.' });

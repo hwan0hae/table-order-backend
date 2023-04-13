@@ -116,12 +116,18 @@ export const tableAddCheck: Schema = {
   locX: {
     in: 'body',
     isNumeric: true,
-    optional: true,
   },
   locY: {
     in: 'body',
     isNumeric: true,
-    optional: true,
+  },
+  tableWidth: {
+    in: 'body',
+    isNumeric: true,
+  },
+  tableHeight: {
+    in: 'body',
+    isNumeric: true,
   },
 };
 
